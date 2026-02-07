@@ -3,7 +3,7 @@
 // Run: dotnet run samples/code-reviewer.cs -- path/to/file.cs
 // =============================================================================
 
-#:package GitHub.Copilot.SDK
+#:package GitHub.Copilot.SDK@*-*
 
 using GitHub.Copilot.SDK;
 

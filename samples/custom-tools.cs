@@ -3,8 +3,8 @@
 // Run: dotnet run samples/custom-tools.cs
 // =============================================================================
 
-#:package GitHub.Copilot.SDK
-#:package Microsoft.Extensions.AI
+#:package GitHub.Copilot.SDK@*-*
+#:package Microsoft.Extensions.AI@*-*
 
 using System.ComponentModel;
 using GitHub.Copilot.SDK;
