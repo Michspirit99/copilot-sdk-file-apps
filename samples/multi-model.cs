@@ -3,7 +3,7 @@
 // Run: dotnet run samples/multi-model.cs
 // =============================================================================
 
-#:package GitHub.Copilot.SDK@*-*
+#:package GitHub.Copilot.SDK@0.1.23
 
 using System.Diagnostics;
 using GitHub.Copilot.SDK;
