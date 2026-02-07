@@ -26,7 +26,7 @@ The result: **single-file AI applications** you can run instantly.
 
 ```bash
 # Clone this repo
-git clone https://github.com/YOUR_USERNAME/copilot-sdk-file-apps.git
+git clone https://github.com/Michspirit99/copilot-sdk-file-apps.git
 cd copilot-sdk-file-apps
 
 # Run any example — no build step required!
