@@ -66,8 +66,8 @@ dotnet run samples/file-summarizer.cs -- README.md
 .NET 10 introduced `dotnet run app.cs` — the ability to run a single `.cs` file without a project. File-level directives replace what `.csproj` files traditionally did:
 
 ```csharp
-#:package GitHub.Copilot.SDK       // NuGet package reference
-#:package Microsoft.Extensions.AI  // Add as many as you need
+#:package GitHub.Copilot.SDK@*-*       // NuGet package reference
+#:package Microsoft.Extensions.AI@*-*  // Add as many as you need
 
 // Your code starts here — top-level statements, no boilerplate
 Console.WriteLine("Hello from a file-based app!");

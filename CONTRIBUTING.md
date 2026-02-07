@@ -18,7 +18,7 @@ Thanks for your interest in contributing! This project welcomes contributions of
 // Run: dotnet run samples/your-sample.cs
 // =============================================================================
 
-#:package GitHub.Copilot.SDK
+#:package GitHub.Copilot.SDK@*-*
 
 using GitHub.Copilot.SDK;
 

@@ -115,7 +115,7 @@ session.On(evt =>
             break;
         case ToolExecutionCompleteEvent toolDone:
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine($"   ✅ Tool completed: {toolDone.Data.ToolName}");
+            Console.WriteLine($"   ✅ Tool completed");
             Console.ResetColor();
             break;
         case AssistantMessageDeltaEvent delta:
