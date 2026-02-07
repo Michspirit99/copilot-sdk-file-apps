@@ -61,8 +61,21 @@ var extractErrorsTool = AIFunctionFactory.Create(
                 if (errors.Count >= 50) break; // Limit to first 50 errors
             }
         }
-        
-        return new { errorCount = errors.Count, errors = errors.Take(20).ToList() };
+
+        var top = errors.Take(20).Select(l => l.Trim()).ToList();
+        var sb = new StringBuilder();
+        sb.AppendLine($"errorCount: {errors.Count}");
+        sb.AppendLine("errors:");
+        if (top.Count == 0)
+        {
+            sb.AppendLine("(none)");
+        }
+        else
+        {
+            foreach (var line in top)
+                sb.AppendLine($"- {line}");
+        }
+        return sb.ToString();
     },
     "extract_errors",
     "Extract error and exception lines from logs"
@@ -86,8 +99,21 @@ var countPatternTool = AIFunctionFactory.Create(
                     examples.Add(line.Trim());
             }
         }
-        
-        return new { pattern, count, examples };
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"pattern: {pattern}");
+        sb.AppendLine($"count: {count}");
+        sb.AppendLine("examples:");
+        if (examples.Count == 0)
+        {
+            sb.AppendLine("(none)");
+        }
+        else
+        {
+            foreach (var ex in examples)
+                sb.AppendLine($"- {ex}");
+        }
+        return sb.ToString();
     },
     "count_pattern",
     "Count occurrences of a pattern in logs"
@@ -99,12 +125,10 @@ var getTimeRangeTool = AIFunctionFactory.Create(
         var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var firstLine = lines.Length > 0 ? lines[0] : "";
         var lastLine = lines.Length > 0 ? lines[^1] : "";
-        
-        return new { 
-            firstEntry = firstLine.Length > 200 ? firstLine.Substring(0, 200) : firstLine,
-            lastEntry = lastLine.Length > 200 ? lastLine.Substring(0, 200) : lastLine,
-            totalLines = lines.Length
-        };
+
+        var firstEntry = firstLine.Length > 200 ? firstLine.Substring(0, 200) : firstLine;
+        var lastEntry = lastLine.Length > 200 ? lastLine.Substring(0, 200) : lastLine;
+        return $"totalLines: {lines.Length}\nfirstEntry: {firstEntry}\nlastEntry: {lastEntry}\n";
     },
     "get_time_range",
     "Get the time range covered by the logs"
@@ -129,8 +153,19 @@ var findSlowOperationsTool = AIFunctionFactory.Create(
                 if (slowOps.Count >= 20) break;
             }
         }
-        
-        return new { slowOperations = slowOps };
+
+        var sb = new StringBuilder();
+        sb.AppendLine("slowOperations:");
+        if (slowOps.Count == 0)
+        {
+            sb.AppendLine("(none)");
+        }
+        else
+        {
+            foreach (var op in slowOps)
+                sb.AppendLine($"- {op}");
+        }
+        return sb.ToString();
     },
     "find_slow_operations",
     "Find operations that took a long time"
