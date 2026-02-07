@@ -36,7 +36,8 @@ jobs:
         errors=0
         for file in samples/*.cs; do
           echo "Checking: $file"
-          if dotnet build "$file" --no-restore 2>&1 | grep -i "error"; then
+          # Remove --no-restore to allow NuGet package downloads
+          if dotnet build "$file" 2>&1 | grep -i "error"; then
             echo "❌ Compilation failed: $file"
             errors=$((errors + 1))
           else
@@ -52,10 +53,9 @@ jobs:
         echo "✅ All samples compiled successfully!"
   
   test-basic-sample:
-    name: Test Basic Sample (with Copilot)
+    name: Verify Sample Structure
     runs-on: ubuntu-latest
     needs: compile-samples
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     
     steps:
     - name: Checkout repository
@@ -67,46 +67,40 @@ jobs:
         dotnet-version: '10.0.x'
         dotnet-quality: 'preview'
     
-    - name: Install GitHub Copilot CLI
+    - name: Test sample can be analyzed
       run: |
-        # Install gh CLI if not available
-        type gh >/dev/null 2>&1 || {
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh -y
-        }
+        echo "🔍 Testing sample file structure..."
         
-        # Install Copilot CLI extension
-        gh extension install github/gh-copilot || true
-        gh extension upgrade gh-copilot || true
+        # Verify samples have proper directives
+        for file in samples/*.cs; do
+          echo "Analyzing: $file"
+          
+          # Check for required package directive
+          if ! grep -q "#:package" "$file"; then
+            echo "⚠️  Warning: $file may be missing package directives"
+          fi
+          
+          # Check for using statements
+          if grep -q "using GitHub.Copilot.SDK" "$file"; then
+            echo "✅ Uses Copilot SDK: $file"
+          fi
+        done
+        
+        echo "✅ Sample structure validation complete!"
     
-    - name: Authenticate with GitHub Copilot
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Verify package versions
       run: |
-        # Use GitHub token for authentication
-        echo "$GH_TOKEN" | gh auth login --with-token
-        gh auth status
-    
-    - name: Run hello-copilot sample
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        echo "🧪 Testing hello-copilot.cs..."
-        timeout 60s dotnet run samples/hello-copilot.cs || {
-          echo "⚠️  Sample execution timed out or failed (may need manual Copilot setup)"
-          echo "This is expected in CI without full Copilot authentication"
-        }
-    
-    - name: Test compilation of automation samples
-      run: |
-        echo "🔍 Verifying automation samples compile..."
-        dotnet build samples/playwright-agent.cs
-        dotnet build samples/log-analyzer.cs
-        dotnet build samples/api-test-generator.cs
-        dotnet build samples/test-data-generator.cs
-        echo "✅ All automation samples compile!"
+        echo "📦 Checking package version specifiers..."
+        
+        # Ensure all packages have version specifiers
+        for file in samples/*.cs; do
+          if grep "#:package" "$file" | grep -v "@"; then
+            echo "❌ Missing version specifier in $file"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All packages have version specifiers!"
   
   validate-readme:
     name: Validate Documentation
