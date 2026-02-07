@@ -77,8 +77,9 @@ jobs:
           echo "❌ Missing COPILOT_PAT secret. Add it in repo Settings > Secrets and variables > Actions."
           exit 1
         fi
-        gh extension install github/gh-copilot || true
-        gh auth login --with-token <<< "$GH_TOKEN"
+        gh extension install github/gh-copilot || gh extension upgrade github/gh-copilot
+
+        # GH_TOKEN is provided via secrets.COPILOT_PAT; no interactive auth required.
         gh auth status
         gh copilot auth status
         echo "✅ Copilot CLI ready"
