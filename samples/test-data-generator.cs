@@ -51,7 +51,7 @@ var generateRecordTool = AIFunctionFactory.Create(
     {
         // This tool helps AI understand what kind of data to generate
         // The actual generation is done by the AI model
-        return new FieldDescriptionResult(fieldName, dataType, index);
+        return $"field: {fieldName}\ntype: {dataType}\nindex: {index}\n";
     },
     "generate_record",
     "Generate a single data record field"
@@ -64,11 +64,11 @@ var validateDataTool = AIFunctionFactory.Create(
         {
             var doc = JsonDocument.Parse(jsonData);
             var recordCount = doc.RootElement.GetArrayLength();
-            return new ValidateDataResult(true, recordCount, "");
+            return $"valid: true\nrecordCount: {recordCount}\n";
         }
         catch (Exception ex)
         {
-            return new ValidateDataResult(false, 0, ex.Message);
+            return $"valid: false\nrecordCount: 0\nerror: {ex.Message}\n";
         }
     },
     "validate_data",
@@ -244,6 +244,3 @@ Console.WriteLine(output.Length > 500 ? output.Substring(0, 500) + "..." : outpu
 Console.WriteLine($"\n💡 Tip: Use different schemas: user, product, order, customer, employee");
 
 return 0;
-
-record FieldDescriptionResult(string field, string type, int index);
-record ValidateDataResult(bool valid, int recordCount, string error);

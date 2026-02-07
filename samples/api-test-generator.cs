@@ -72,7 +72,7 @@ var parseEndpointsTool = AIFunctionFactory.Create(
         {
             // Try to parse as JSON
             var doc = JsonDocument.Parse(spec);
-            var endpoints = new List<object>();
+            var endpoints = new List<(string Path, string Method, string Summary, string OperationId)>();
             
             if (doc.RootElement.TryGetProperty("paths", out var paths))
             {
@@ -80,25 +80,35 @@ var parseEndpointsTool = AIFunctionFactory.Create(
                 {
                     foreach (var method in path.Value.EnumerateObject())
                     {
-                        var endpoint = new
-                        {
-                            path = path.Name,
-                            method = method.Name.ToUpper(),
-                            summary = method.Value.TryGetProperty("summary", out var s) ? s.GetString() : "",
-                            operationId = method.Value.TryGetProperty("operationId", out var o) ? o.GetString() : ""
-                        };
-                        endpoints.Add(endpoint);
+                        endpoints.Add(
+                            (
+                                path.Name,
+                                method.Name.ToUpperInvariant(),
+                                method.Value.TryGetProperty("summary", out var s) ? (s.GetString() ?? "") : "",
+                                method.Value.TryGetProperty("operationId", out var o) ? (o.GetString() ?? "") : ""
+                            )
+                        );
                         if (endpoints.Count > 50) break; // Limit
                     }
                     if (endpoints.Count > 50) break;
                 }
             }
-            
-            return new ParseEndpointsResult(true, $"Found {endpoints.Count} endpoints", endpoints, endpoints.Count);
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"success: true");
+            sb.AppendLine($"count: {endpoints.Count}");
+            sb.AppendLine("endpoints:");
+            foreach (var ep in endpoints)
+            {
+                var summary = string.IsNullOrWhiteSpace(ep.Summary) ? "" : $" — {ep.Summary}";
+                var opId = string.IsNullOrWhiteSpace(ep.OperationId) ? "" : $" (operationId: {ep.OperationId})";
+                sb.AppendLine($"- {ep.Method} {ep.Path}{summary}{opId}");
+            }
+            return sb.ToString();
         }
         catch (Exception ex)
         {
-            return new ParseEndpointsResult(false, ex.Message, new List<object>(), 0);
+            return $"success: false\nmessage: {ex.Message}\n";
         }
     },
     "parse_endpoints",
@@ -121,8 +131,11 @@ var analyzeAuthTool = AIFunctionFactory.Create(
             if (spec.Contains("basic", StringComparison.OrdinalIgnoreCase))
                 authTypes.Add("Basic Auth");
         }
-        
-        return new AuthAnalysisResult(authTypes);
+
+        if (authTypes.Count == 0)
+            return "authenticationTypes: (none detected)\n";
+
+        return "authenticationTypes:\n" + string.Join("\n", authTypes.Select(a => $"- {a}")) + "\n";
     },
     "analyze_auth",
     "Analyze authentication requirements"
@@ -147,8 +160,13 @@ var generateTestCasesTool = AIFunctionFactory.Create(
             testCases.Add($"Test {method} {path} - Missing Required Fields");
             testCases.Add($"Test {method} {path} - Invalid Data Types");
         }
-        
-        return new TestCaseResult($"{method} {path}", testCases);
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"endpoint: {method} {path}");
+        sb.AppendLine("testCases:");
+        foreach (var tc in testCases)
+            sb.AppendLine($"- {tc}");
+        return sb.ToString();
     },
     "generate_test_cases",
     "Generate test case scenarios for an endpoint"
@@ -252,7 +270,3 @@ Console.WriteLine($"💾 Saved to: {outputPath}");
 Console.WriteLine($"💡 Tip: Review and customize the generated tests before use");
 
 return 0;
-
-record ParseEndpointsResult(bool success, string message, List<object> endpoints, int count);
-record AuthAnalysisResult(List<string> authenticationTypes);
-record TestCaseResult(string endpoint, List<string> testCases);
