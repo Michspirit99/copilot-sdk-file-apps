@@ -17,7 +17,7 @@ await using var client = new CopilotClient();
 await client.StartAsync();
 
 // Models to compare — the Copilot SDK supports all models available via Copilot CLI
-var models = new[] { "gpt-4o", "claude-sonnet-4.5" };
+var models = new[] { "gpt-4o", "gpt-4o-mini" };
 
 var prompt = args.Length > 0
     ? string.Join(" ", args)

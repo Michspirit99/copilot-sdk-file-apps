@@ -28,6 +28,10 @@ Console.WriteLine($"🌐 Playwright AI Agent");
 Console.WriteLine($"📍 Target: {targetUrl}");
 Console.WriteLine($"🎯 Task: {task}\n");
 
+// Playwright currently uses System.Text.Json reflection-based serialization for its wire protocol.
+// .NET 10 file-based apps can run with reflection serialization disabled; re-enable it for Playwright.
+AppContext.SetSwitch("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true);
+
 // Initialize Playwright
 var playwright = await Playwright.CreateAsync();
 var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -43,7 +47,8 @@ var navigateTool = AIFunctionFactory.Create(
     {
         await page.GotoAsync(url);
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        return new { success = true, url = page.Url, title = await page.TitleAsync() };
+        var title = await page.TitleAsync();
+        return $"success: true\nurl: {page.Url}\ntitle: {title}\n";
     },
     "navigate",
     "Navigate to a URL"
@@ -57,8 +62,8 @@ var getPageContentTool = AIFunctionFactory.Create(
         // Truncate if too long
         if (textContent.Length > 2000)
             textContent = textContent.Substring(0, 2000) + "... (truncated)";
-        
-        return new { title, url = page.Url, content = textContent };
+
+        return $"title: {title}\nurl: {page.Url}\ncontent:\n{textContent}\n";
     },
     "get_page_content",
     "Get the text content of the current page"
@@ -79,11 +84,11 @@ var clickElementTool = AIFunctionFactory.Create(
                 await page.GetByText(selector).ClickAsync();
             }
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            return new { success = true, message = "Clicked successfully" };
+            return "success: true\nmessage: Clicked successfully\n";
         }
         catch (Exception ex)
         {
-            return new { success = false, message = ex.Message };
+            return $"success: false\nmessage: {ex.Message}\n";
         }
     },
     "click_element",
@@ -98,11 +103,11 @@ var fillFormTool = AIFunctionFactory.Create(
         try
         {
             await page.FillAsync(selector, value);
-            return new { success = true, message = $"Filled '{selector}' with '{value}'" };
+            return $"success: true\nmessage: Filled '{selector}' with '{value}'\n";
         }
         catch (Exception ex)
         {
-            return new { success = false, message = ex.Message };
+            return $"success: false\nmessage: {ex.Message}\n";
         }
     },
     "fill_form",
@@ -114,7 +119,7 @@ var screenshotTool = AIFunctionFactory.Create(
     {
         var path = Path.Combine(Directory.GetCurrentDirectory(), filename);
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = path });
-        return new { success = true, path };
+        return $"success: true\npath: {path}\n";
     },
     "screenshot",
     "Take a screenshot of the current page"
