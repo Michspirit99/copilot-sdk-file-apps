@@ -35,16 +35,17 @@ jobs:
         echo "🔨 Compiling all sample files..."
         errors=0
         for file in samples/*.cs; do
-          echo "Checking: $file"
-          # Remove --no-restore to allow NuGet package downloads
-          if dotnet build "$file" 2>&1 | grep -i "error"; then
+          echo ""
+          echo "=== Compiling: $file ==="
+          if dotnet build "$file" 2>&1; then
+            echo "✅ Compiled: $file"
+          else
             echo "❌ Compilation failed: $file"
             errors=$((errors + 1))
-          else
-            echo "✅ Compiled: $file"
           fi
         done
         
+        echo ""
         if [ $errors -gt 0 ]; then
           echo "❌ $errors sample(s) failed to compile"
           exit 1
@@ -52,7 +53,7 @@ jobs:
         
         echo "✅ All samples compiled successfully!"
   
-  test-basic-sample:
+  verify-structure:
     name: Verify Sample Structure
     runs-on: ubuntu-latest
     needs: compile-samples
@@ -61,46 +62,38 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
-        dotnet-quality: 'preview'
-    
-    - name: Test sample can be analyzed
+    - name: Verify package directives
       run: |
-        echo "🔍 Testing sample file structure..."
+        echo "📦 Checking package directives..."
+        errors=0
         
-        # Verify samples have proper directives
         for file in samples/*.cs; do
-          echo "Analyzing: $file"
+          echo "Checking: $file"
           
           # Check for required package directive
           if ! grep -q "#:package" "$file"; then
-            echo "⚠️  Warning: $file may be missing package directives"
+            echo "❌ Missing #:package directive: $file"
+            errors=$((errors + 1))
           fi
           
-          # Check for using statements
+          # Ensure all packages have version specifiers
+          if grep "#:package" "$file" | grep -qv "@"; then
+            echo "❌ Package missing version specifier in: $file"
+            errors=$((errors + 1))
+          fi
+          
+          # Check for Copilot SDK usage
           if grep -q "using GitHub.Copilot.SDK" "$file"; then
-            echo "✅ Uses Copilot SDK: $file"
+            echo "  ✅ Uses Copilot SDK"
           fi
         done
         
-        echo "✅ Sample structure validation complete!"
-    
-    - name: Verify package versions
-      run: |
-        echo "📦 Checking package version specifiers..."
+        if [ $errors -gt 0 ]; then
+          echo "❌ $errors issue(s) found"
+          exit 1
+        fi
         
-        # Ensure all packages have version specifiers
-        for file in samples/*.cs; do
-          if grep "#:package" "$file" | grep -v "@"; then
-            echo "❌ Missing version specifier in $file"
-            exit 1
-          fi
-        done
-        
-        echo "✅ All packages have version specifiers!"
+        echo "✅ All package directives valid!"
   
   validate-readme:
     name: Validate Documentation

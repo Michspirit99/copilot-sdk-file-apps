@@ -64,11 +64,11 @@ var validateDataTool = AIFunctionFactory.Create(
         {
             var doc = JsonDocument.Parse(jsonData);
             var recordCount = doc.RootElement.GetArrayLength();
-            return new { valid = true, recordCount };
+            return new { valid = true, recordCount, error = "" };
         }
         catch (Exception ex)
         {
-            return new { valid = false, error = ex.Message };
+            return new { valid = false, recordCount = 0, error = ex.Message };
         }
     },
     "validate_data",

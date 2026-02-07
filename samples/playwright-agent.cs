@@ -183,7 +183,7 @@ await responseComplete.Task;
 
 // Cleanup
 await browser.CloseAsync();
-await playwright.DisposeAsync();
+playwright.Dispose();
 
 Console.WriteLine($"\n✅ Automation complete!");
 return 0;

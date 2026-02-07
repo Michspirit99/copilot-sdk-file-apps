@@ -94,11 +94,11 @@ var parseEndpointsTool = AIFunctionFactory.Create(
                 }
             }
             
-            return new { success = true, endpoints, count = endpoints.Count };
+            return new { success = true, message = $"Found {endpoints.Count} endpoints", endpoints, count = endpoints.Count };
         }
-        catch
+        catch (Exception ex)
         {
-            return new { success = false, message = "Could not parse OpenAPI spec as JSON" };
+            return new { success = false, message = ex.Message, endpoints = new List<object>(), count = 0 };
         }
     },
     "parse_endpoints",
