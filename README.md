@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10-blue.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Copilot SDK](https://img.shields.io/badge/Copilot_SDK-Technical_Preview-green.svg)](https://github.com/github/copilot-sdk)
+[![Validate Samples](https://github.com/Michspirit99/copilot-sdk-file-apps/actions/workflows/validate-samples.yml/badge.svg)](https://github.com/Michspirit99/copilot-sdk-file-apps/actions/workflows/validate-samples.yml)
 
 ## What Is This?
 

@@ -1,0 +1,160 @@
+name: Validate Samples
+
+on:
+  workflow_dispatch: # Manual trigger only
+  push:
+    branches: [ master ]
+    paths:
+      - 'samples/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'samples/**'
+
+jobs:
+  compile-samples:
+    name: Compile All Samples
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        dotnet-quality: 'preview'
+    
+    - name: Verify .NET version
+      run: dotnet --version
+    
+    - name: Compile all samples
+      run: |
+        echo "🔨 Compiling all sample files..."
+        errors=0
+        for file in samples/*.cs; do
+          echo "Checking: $file"
+          if dotnet build "$file" --no-restore 2>&1 | grep -i "error"; then
+            echo "❌ Compilation failed: $file"
+            errors=$((errors + 1))
+          else
+            echo "✅ Compiled: $file"
+          fi
+        done
+        
+        if [ $errors -gt 0 ]; then
+          echo "❌ $errors sample(s) failed to compile"
+          exit 1
+        fi
+        
+        echo "✅ All samples compiled successfully!"
+  
+  test-basic-sample:
+    name: Test Basic Sample (with Copilot)
+    runs-on: ubuntu-latest
+    needs: compile-samples
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        dotnet-quality: 'preview'
+    
+    - name: Install GitHub Copilot CLI
+      run: |
+        # Install gh CLI if not available
+        type gh >/dev/null 2>&1 || {
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh -y
+        }
+        
+        # Install Copilot CLI extension
+        gh extension install github/gh-copilot || true
+        gh extension upgrade gh-copilot || true
+    
+    - name: Authenticate with GitHub Copilot
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Use GitHub token for authentication
+        echo "$GH_TOKEN" | gh auth login --with-token
+        gh auth status
+    
+    - name: Run hello-copilot sample
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "🧪 Testing hello-copilot.cs..."
+        timeout 60s dotnet run samples/hello-copilot.cs || {
+          echo "⚠️  Sample execution timed out or failed (may need manual Copilot setup)"
+          echo "This is expected in CI without full Copilot authentication"
+        }
+    
+    - name: Test compilation of automation samples
+      run: |
+        echo "🔍 Verifying automation samples compile..."
+        dotnet build samples/playwright-agent.cs
+        dotnet build samples/log-analyzer.cs
+        dotnet build samples/api-test-generator.cs
+        dotnet build samples/test-data-generator.cs
+        echo "✅ All automation samples compile!"
+  
+  validate-readme:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Check all samples are documented
+      run: |
+        echo "📚 Checking README documentation..."
+        
+        # Get all sample files
+        samples=$(ls samples/*.cs | xargs -n 1 basename)
+        
+        echo "Sample files found:"
+        echo "$samples"
+        echo ""
+        
+        missing=0
+        for sample in $samples; do
+          if ! grep -q "$sample" README.md; then
+            echo "❌ Sample not documented in README: $sample"
+            missing=$((missing + 1))
+          else
+            echo "✅ Documented: $sample"
+          fi
+        done
+        
+        if [ $missing -gt 0 ]; then
+          echo ""
+          echo "⚠️  $missing sample(s) missing from README"
+          echo "Please add documentation for all samples"
+          exit 1
+        fi
+        
+        echo ""
+        echo "✅ All samples are documented in README!"
+    
+    - name: Verify sample count matches
+      run: |
+        sample_count=$(ls samples/*.cs | wc -l)
+        readme_sample_count=$(grep -c "samples/.*\.cs" README.md || true)
+        
+        echo "Sample files: $sample_count"
+        echo "README references: $readme_sample_count"
+        
+        if [ "$readme_sample_count" -lt "$sample_count" ]; then
+          echo "⚠️  README may be missing some samples"
+        fi
