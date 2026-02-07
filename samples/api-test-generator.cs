@@ -94,11 +94,11 @@ var parseEndpointsTool = AIFunctionFactory.Create(
                 }
             }
             
-            return new { success = true, message = $"Found {endpoints.Count} endpoints", endpoints, count = endpoints.Count };
+            return new ParseEndpointsResult(true, $"Found {endpoints.Count} endpoints", endpoints, endpoints.Count);
         }
         catch (Exception ex)
         {
-            return new { success = false, message = ex.Message, endpoints = new List<object>(), count = 0 };
+            return new ParseEndpointsResult(false, ex.Message, new List<object>(), 0);
         }
     },
     "parse_endpoints",
@@ -122,7 +122,7 @@ var analyzeAuthTool = AIFunctionFactory.Create(
                 authTypes.Add("Basic Auth");
         }
         
-        return new { authenticationTypes = authTypes };
+        return new AuthAnalysisResult(authTypes);
     },
     "analyze_auth",
     "Analyze authentication requirements"
@@ -148,7 +148,7 @@ var generateTestCasesTool = AIFunctionFactory.Create(
             testCases.Add($"Test {method} {path} - Invalid Data Types");
         }
         
-        return new { endpoint = $"{method} {path}", testCases };
+        return new TestCaseResult($"{method} {path}", testCases);
     },
     "generate_test_cases",
     "Generate test case scenarios for an endpoint"
@@ -252,3 +252,7 @@ Console.WriteLine($"💾 Saved to: {outputPath}");
 Console.WriteLine($"💡 Tip: Review and customize the generated tests before use");
 
 return 0;
+
+record ParseEndpointsResult(bool success, string message, List<object> endpoints, int count);
+record AuthAnalysisResult(List<string> authenticationTypes);
+record TestCaseResult(string endpoint, List<string> testCases);

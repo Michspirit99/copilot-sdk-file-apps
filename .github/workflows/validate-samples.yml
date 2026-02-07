@@ -57,6 +57,8 @@ jobs:
     name: Run Samples with Copilot
     runs-on: ubuntu-latest
     needs: compile-samples
+    env:
+      GH_TOKEN: ${{ secrets.COPILOT_PAT }}
     
     steps:
     - name: Checkout repository
@@ -69,12 +71,16 @@ jobs:
         dotnet-quality: 'preview'
     
     - name: Install Copilot CLI
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🔧 Installing Copilot CLI..."
+        if [ -z "$GH_TOKEN" ]; then
+          echo "❌ Missing COPILOT_PAT secret. Add it in repo Settings > Secrets and variables > Actions."
+          exit 1
+        fi
         gh extension install github/gh-copilot || true
+        gh auth login --with-token <<< "$GH_TOKEN"
         gh auth status
+        gh copilot auth status
         echo "✅ Copilot CLI ready"
 
     - name: Create test fixtures
@@ -118,97 +124,75 @@ jobs:
         echo "✅ Test fixtures created"
 
     - name: "Run: hello-copilot.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running hello-copilot.cs..."
-        timeout 120 dotnet run samples/hello-copilot.cs 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/hello-copilot.cs 2>&1
         echo "✅ hello-copilot.cs completed"
 
     - name: "Run: streaming-chat.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running streaming-chat.cs..."
-        timeout 120 dotnet run samples/streaming-chat.cs 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/streaming-chat.cs 2>&1
         echo "✅ streaming-chat.cs completed"
 
     - name: "Run: custom-tools.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running custom-tools.cs..."
-        timeout 120 dotnet run samples/custom-tools.cs 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/custom-tools.cs 2>&1
         echo "✅ custom-tools.cs completed"
 
     - name: "Run: multi-model.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running multi-model.cs..."
-        timeout 120 dotnet run samples/multi-model.cs 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/multi-model.cs 2>&1
         echo "✅ multi-model.cs completed"
 
     - name: "Run: code-reviewer.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running code-reviewer.cs with samples/hello-copilot.cs as input..."
-        timeout 120 dotnet run samples/code-reviewer.cs -- samples/hello-copilot.cs 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/code-reviewer.cs -- samples/hello-copilot.cs 2>&1
         echo "✅ code-reviewer.cs completed"
 
     - name: "Run: file-summarizer.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running file-summarizer.cs with README.md as input..."
-        timeout 120 dotnet run samples/file-summarizer.cs -- README.md 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/file-summarizer.cs -- README.md 2>&1
         echo "✅ file-summarizer.cs completed"
 
     - name: "Run: git-commit-writer.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running git-commit-writer.cs..."
         # Create a staged change so the tool has something to work with
         echo "// CI test" >> samples/hello-copilot.cs
         git add samples/hello-copilot.cs
-        timeout 120 dotnet run samples/git-commit-writer.cs 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/git-commit-writer.cs 2>&1
         # Restore the file
         git checkout samples/hello-copilot.cs
         echo "✅ git-commit-writer.cs completed"
 
     - name: "Run: log-analyzer.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running log-analyzer.cs with test log file..."
-        timeout 120 dotnet run samples/log-analyzer.cs -- /tmp/test-app.log errors 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/log-analyzer.cs -- /tmp/test-app.log errors 2>&1
         echo "✅ log-analyzer.cs completed"
 
     - name: "Run: api-test-generator.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running api-test-generator.cs with test OpenAPI spec..."
-        timeout 120 dotnet run samples/api-test-generator.cs -- /tmp/test-api.json xunit 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/api-test-generator.cs -- /tmp/test-api.json xunit 2>&1
         echo "✅ api-test-generator.cs completed"
 
     - name: "Run: test-data-generator.cs"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running test-data-generator.cs..."
-        timeout 120 dotnet run samples/test-data-generator.cs -- user 5 json 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/test-data-generator.cs -- user 5 json 2>&1
         echo "✅ test-data-generator.cs completed"
 
     - name: "Run: interactive-chat.cs (piped stdin)"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running interactive-chat.cs with simulated input..."
         # Pipe two messages then 'exit' to simulate an interactive REPL session
-        printf "What is 2+2?\nexit\n" | timeout 120 dotnet run samples/interactive-chat.cs 2>&1 || echo "⚠️ Exited with code $?"
+        printf "What is 2+2?\nexit\n" | timeout 240 dotnet run samples/interactive-chat.cs 2>&1
         echo "✅ interactive-chat.cs completed"
 
     - name: Install Playwright browsers
@@ -222,11 +206,9 @@ jobs:
         echo "✅ Playwright browsers installed"
 
     - name: "Run: playwright-agent.cs (headless Chromium)"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "🧪 Running playwright-agent.cs against https://example.com..."
-        timeout 120 dotnet run samples/playwright-agent.cs -- https://example.com "Describe what you see on the page" 2>&1 || echo "⚠️ Exited with code $?"
+        timeout 240 dotnet run samples/playwright-agent.cs -- https://example.com "Describe what you see on the page" 2>&1
         echo "✅ playwright-agent.cs completed"
 
     - name: Summary
