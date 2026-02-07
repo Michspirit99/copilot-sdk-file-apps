@@ -3,7 +3,7 @@
 // Run: dotnet run samples/file-summarizer.cs -- path/to/file.txt
 // =============================================================================
 
-#:package GitHub.Copilot.SDK@*-*
+#:package GitHub.Copilot.SDK@0.1.23
 
 using GitHub.Copilot.SDK;
 

@@ -201,8 +201,8 @@ jobs:
         echo "🌐 Installing Playwright Chromium browser..."
         # Build the sample first so the Playwright package is restored
         dotnet build samples/playwright-agent.cs
-        # Install Chromium with system dependencies
-        dotnet tool install --global Microsoft.Playwright.CLI || true
+        # Install Chromium with system dependencies (pinned to match library version)
+        dotnet tool install --global Microsoft.Playwright.CLI --version 1.58.0 || true
         playwright install --with-deps chromium || npx --yes playwright install --with-deps chromium || true
         echo "✅ Playwright browsers installed"
 

@@ -3,7 +3,7 @@
 // Run: dotnet run samples/interactive-chat.cs
 // =============================================================================
 
-#:package GitHub.Copilot.SDK@*-*
+#:package GitHub.Copilot.SDK@0.1.23
 
 using GitHub.Copilot.SDK;
 

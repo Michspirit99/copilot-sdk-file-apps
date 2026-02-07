@@ -20,7 +20,7 @@ This repository includes a GitHub Actions workflow that validates all samples co
 
 ### 2. Test Basic Sample
 - Runs `hello-copilot.cs` with GitHub Copilot authentication
-- Uses the repository's `GITHUB_TOKEN` for Copilot access
+- Uses a repository secret PAT (`COPILOT_PAT`) for Copilot access
 - Demonstrates samples work end-to-end
 
 ### 3. Validate Documentation
@@ -47,7 +47,7 @@ The README includes a status badge showing the latest validation result:
 ## Notes
 
 - The workflow uses **free** GitHub-hosted runners
-- Copilot authentication uses the default `GITHUB_TOKEN` (no secrets needed)
+- Copilot authentication uses a secret PAT (`COPILOT_PAT`) because `GITHUB_TOKEN` (the `github-actions[bot]` identity) may not have Copilot entitlements
 - Compilation tests run on every push to catch issues early
 - Full execution tests can be run manually to demonstrate functionality
 - No ongoing costs - runs only when triggered or code changes
@@ -56,7 +56,7 @@ The README includes a status badge showing the latest validation result:
 
 **If compilation fails:**
 - Check that .NET 10 preview is available in GitHub Actions
-- Verify package version specifiers are correct (`@*-*`)
+- Verify package version specifiers are correct (pinned `#:package ...@<version>` directives)
 - Review error logs in the Actions tab
 
 **If Copilot authentication fails:**

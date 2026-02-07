@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet
-#:package GitHub.Copilot.SDK@*-*
-#:package Microsoft.Extensions.AI@*-*
-#:package Microsoft.Playwright@*-*
+#:package GitHub.Copilot.SDK@0.1.23
+#:package Microsoft.Extensions.AI@10.2.0
+#:package Microsoft.Playwright@1.58.0
 
 using GitHub.Copilot.SDK;
 using Microsoft.Extensions.AI;
