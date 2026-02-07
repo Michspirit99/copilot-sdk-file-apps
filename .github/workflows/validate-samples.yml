@@ -70,9 +70,9 @@ jobs:
         dotnet-version: '10.0.x'
         dotnet-quality: 'preview'
     
-    - name: Install Copilot CLI
+    - name: Validate GitHub auth
       run: |
-        echo "🔧 Installing Copilot CLI..."
+        echo "🔐 Validating GitHub auth..."
         if [ -z "$GH_TOKEN" ]; then
           echo "❌ Missing COPILOT_PAT secret. Add it in repo Settings > Secrets and variables > Actions."
           exit 1
@@ -81,9 +81,8 @@ jobs:
 
         # GH_TOKEN is provided via secrets.COPILOT_PAT; no interactive auth required.
         gh auth status
-        gh copilot --help > /dev/null
-        gh copilot auth status
-        echo "✅ Copilot CLI ready"
+        echo "Token login: $(gh api /user -q .login)"
+        echo "✅ GitHub auth OK"
 
     - name: Create test fixtures
       run: |
