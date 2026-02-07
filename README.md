@@ -37,16 +37,27 @@ That's it. No `dotnet new`, no `.csproj`, no `dotnet restore`. Just run.
 
 ## Samples
 
+### Core Examples
+
 | File | Description |
 |------|-------------|
 | [`samples/hello-copilot.cs`](samples/hello-copilot.cs) | Minimal "Hello World" — send a prompt, get a response |
 | [`samples/streaming-chat.cs`](samples/streaming-chat.cs) | Stream responses token-by-token in real time |
 | [`samples/interactive-chat.cs`](samples/interactive-chat.cs) | Full interactive chat loop in the terminal |
 | [`samples/code-reviewer.cs`](samples/code-reviewer.cs) | AI-powered code review — pass any file for analysis |
-| [`samples/custom-tools.cs`](samples/custom-tools.cs) | Define custom tools the AI agent can invoke |
+| [`samples/custom-tools.cs`](samples/custom-tools.cs) | Define custom C# functions callable by AI |
 | [`samples/multi-model.cs`](samples/multi-model.cs) | Compare responses across different models |
 | [`samples/file-summarizer.cs`](samples/file-summarizer.cs) | Summarize any text file using AI |
 | [`samples/git-commit-writer.cs`](samples/git-commit-writer.cs) | Generate commit messages from staged changes |
+
+### Automation & Testing
+
+| File | Description |
+|------|-------------|
+| [`samples/playwright-agent.cs`](samples/playwright-agent.cs) | 🌐 AI-driven browser automation with Playwright |
+| [`samples/log-analyzer.cs`](samples/log-analyzer.cs) | 📊 Analyze logs for errors, security issues, performance |
+| [`samples/api-test-generator.cs`](samples/api-test-generator.cs) | 🧪 Generate API tests from OpenAPI/Swagger specs |
+| [`samples/test-data-generator.cs`](samples/test-data-generator.cs) | 🎲 Generate realistic test data in JSON/SQL/CSV |
 
 ### Run any sample
 
@@ -54,10 +65,44 @@ That's it. No `dotnet new`, no `.csproj`, no `dotnet restore`. Just run.
 # Basic usage
 dotnet run samples/hello-copilot.cs
 
-# Pass arguments to samples that accept them
+# Core examples with arguments
 dotnet run samples/code-reviewer.cs -- path/to/file.cs
 dotnet run samples/file-summarizer.cs -- README.md
+
+# Automation examples
+dotnet run samples/playwright-agent.cs -- https://example.com "Describe the page"
+dotnet run samples/log-analyzer.cs -- app.log errors
+dotnet run samples/api-test-generator.cs -- swagger.json xunit
+dotnet run samples/test-data-generator.cs -- user 50 json
 ```
+
+## Automation Use Cases
+
+The automation samples demonstrate practical AI-powered workflows:
+
+**🌐 Browser Automation ([playwright-agent.cs](samples/playwright-agent.cs))**
+- Navigate websites and extract data
+- Fill forms and interact with pages
+- Automated testing scenarios
+- Web scraping with AI guidance
+
+**📊 Log Analysis ([log-analyzer.cs](samples/log-analyzer.cs))**
+- Find and categorize errors
+- Security threat detection
+- Performance bottleneck identification
+- Automated incident reports
+
+**🧪 API Testing ([api-test-generator.cs](samples/api-test-generator.cs))**
+- Generate xUnit/NUnit test cases
+- Create Postman collections
+- Generate curl command references
+- Test coverage analysis
+
+**🎲 Test Data ([test-data-generator.cs](samples/test-data-generator.cs))**
+- Realistic user profiles
+- Product catalogs
+- Order histories
+- Custom schemas in JSON/SQL/CSV
 
 ## How It Works
 
@@ -140,7 +185,11 @@ copilot-sdk-file-apps/
 │   ├── custom-tools.cs         # Custom tool definitions
 │   ├── multi-model.cs          # Multi-model comparison
 │   ├── file-summarizer.cs      # File summarization
-│   └── git-commit-writer.cs    # Git commit message generation
+│   ├── git-commit-writer.cs    # Git commit message generation
+│   ├── playwright-agent.cs     # Browser automation
+│   ├── log-analyzer.cs         # Log file analysis
+│   ├── api-test-generator.cs   # API test generation
+│   └── test-data-generator.cs  # Test data generation
 ├── README.md
 ├── LICENSE
 ├── .gitignore
